@@ -1,0 +1,6 @@
+Total Project: 30.32 GB
+Datasets (data folder): 23.11 GB ❌ (exclude for deployment)
+Virtual Environment: 4.91 GB ❌ (exclude for deployment)
+Essential Files: ~2.1 GB ✅ (deploy this)
+
+I cant upload everything in GitHub so i have excluded the datasets and venv files

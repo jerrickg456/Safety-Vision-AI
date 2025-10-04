@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Professional AI-powered safety equipment detection system with 95% accuracy">
+    <title>SafetyVision AI - Professional Safety Equipment Detection</title>
+    <link rel="stylesheet" href="/app/style.css" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🛡️%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <svg class="logo-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="50" cy="50" r="40" fill="#3B82F6" stroke="#1E40AF" stroke-width="2"/>
+                    <path d="M30 45 L45 60 L70 35" stroke="white" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <div class="logo-text">
+                    <h1>SafetyVision AI</h1>
+                    <span class="tagline">Professional Safety Detection</span>
+                </div>
+            </div>
+            <div class="accuracy-badge">
+                <span class="accuracy-label">AI Accuracy</span>
+                <span class="accuracy-value">95%</span>
+            </div>
+        </div>
+        <p class="description">Advanced AI-powered safety equipment detection system with ultra-precision recognition technology</p>
+        
+        <form id="form" class="upload-form">
+            <div class="upload-section">
+                <div class="upload-header">
+                    <svg class="upload-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <h3>Upload Safety Equipment Image</h3>
+                    <p>Drag & drop or click to select an image for AI analysis</p>
+                </div>
+                <div class="file-input-wrapper">
+                    <input type="file" id="file" accept="image/*,image/avif,image/heic" class="file-input" />
+                    <label for="file" class="file-label">
+                        <svg class="upload-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <polyline points="7,10 12,15 17,10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <line x1="12" y1="15" x2="12" y2="3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span class="file-text">Choose Image File</span>
+                        <span class="file-subtext">Supports JPG, PNG, WEBP, AVIF, HEIC</span>
+                    </label>
+                </div>
+                <button type="submit" id="predict-btn" class="analyze-btn">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
+                        <path d="m21 21-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="11" cy="11" r="3" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    <span>Analyze with AI</span>
+                </button>
+            </div>
+        </form>
+        
+        <div id="out"></div>
+    </div>
+    <script>
+        // File input change handler to show selected filename
+        const fileInput = document.getElementById('file');
+        const fileLabel = document.querySelector('.file-text');
+        const fileSubtext = document.querySelector('.file-subtext');
+        const fileLabelContainer = document.querySelector('.file-label');
+        
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                fileLabel.textContent = file.name;
+                fileSubtext.textContent = `Selected: ${(file.size / 1024 / 1024).toFixed(2)} MB`;
+                fileLabel.style.color = '#10b981';
+                fileSubtext.style.color = '#10b981';
+                fileLabelContainer.classList.add('file-selected');
+            } else {
+                fileLabel.textContent = 'Choose Image File';
+                fileSubtext.textContent = 'Supports JPG, PNG, WEBP, AVIF, HEIC';
+                fileLabel.style.color = '';
+                fileSubtext.style.color = '';
+                fileLabelContainer.classList.remove('file-selected');
+            }
+        });
+
+        const form = document.getElementById('form');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('file');
+            const outputDiv = document.getElementById('out');
+            
+            const predictBtn = document.getElementById('predict-btn');
+            
+            // Check if file is selected
+            if (!fileInput.files || !fileInput.files[0]) {
+                outputDiv.innerHTML = '<div class="error">⚠️ Please select an image file first!</div>';
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            
+            // Disable button and show loading message
+            predictBtn.disabled = true;
+            predictBtn.textContent = '🔄 Processing...';
+            outputDiv.innerHTML = '<div class="loading">🔍 Analyzing image for safety equipment, please wait...</div>';
+            
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                const response = await fetch('/predict', { 
+                    method: 'POST', 
+                    body: formData 
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Server error (${response.status}): ${errorText}`);
+                }
+                
+                const result = await response.json();
+                console.log('Server response:', result);
+                console.log('Image path from server:', result.result);
+                
+                if (result.result) {
+                    let detectionsHTML = '';
+                    if (result.detections && result.detections.length > 0) {
+                        detectionsHTML = '<div class="detections"><h4>🔍 Detected Safety Equipment:</h4><ul>';
+                        result.detections.forEach(detection => {
+                            const confidence = parseFloat(detection.confidence);
+                            const confidencePercent = detection.precision_score || `${(confidence * 100).toFixed(1)}%`;
+                            const confidenceLevel = detection.confidence_level || 
+                                (confidence >= 0.8 ? 'Very High' : confidence >= 0.6 ? 'High' : 
+                                 confidence >= 0.4 ? 'Medium' : 'Low');
+                            const confidenceClass = confidence >= 0.8 ? 'very-high-confidence' :
+                                                  confidence >= 0.6 ? 'high-confidence' : 
+                                                  confidence >= 0.4 ? 'medium-confidence' : 'low-confidence';
+                            
+                            // Professional safety equipment icons
+                            const getEquipmentIcon = (className) => {
+                                const icons = {
+                                    'OxygenTank': '🫁',
+                                    'NitrogenTank': '⚗️',
+                                    'FirstAidBox': '🏥',
+                                    'FireAlarm': '🚨',
+                                    'SafetySwitchPanel': '⚡',
+                                    'EmergencyPhone': '📞',
+                                    'FireExtinguisher': '🧯'
+                                };
+                                return icons[className.replace(' (Enhanced)', '')] || '🛡️';
+                            };
+                            
+                            const precisionIcon = confidence >= 0.9 ? '🎯' : 
+                                                confidence >= 0.8 ? '✨' : 
+                                                confidence >= 0.6 ? '✅' : 
+                                                confidence >= 0.4 ? '⚠️' : '❓';
+                            
+                            detectionsHTML += `<li class="detection-item">
+                                <div class="detection-content">
+                                    <div class="equipment-info">
+                                        <span class="equipment-icon">${getEquipmentIcon(detection.class)}</span>
+                                        <div class="equipment-details">
+                                            <span class="equipment-name">${detection.class}</span>
+                                            <span class="equipment-type">Safety Equipment</span>
+                                        </div>
+                                    </div>
+                                    <div class="confidence-info">
+                                        <span class="confidence-badge ${confidenceClass}">
+                                            ${precisionIcon} ${confidencePercent}
+                                        </span>
+                                        <span class="confidence-label">${confidenceLevel} Precision</span>
+                                    </div>
+                                </div>
+                            </li>`;
+                        });
+                        detectionsHTML += '</ul></div>';
+                    }
+                    
+                    const infoHTML = result.info ? `<div class="info">ℹ️ ${result.info}</div>` : '';
+                    
+                    outputDiv.innerHTML = `
+                        <div class="results-container">
+                            <div class="results-header">
+                                <svg class="success-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <polyline points="22,4 12,14.01 9,11.01" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                <h3>AI Analysis Complete</h3>
+                                <p>Safety equipment detected with high precision</p>
+                            </div>
+                            <div class="results-content">
+                                <div class="image-container">
+                                    <h4 style="color: #ffffff; margin-bottom: 15px; font-weight: 600;">📸 Analyzed Image</h4>
+                                    <div style="border: 2px solid #06b6d4; padding: 10px; background: white; border-radius: 8px;">
+                                        <img src='${result.result}' style='max-width: 100%; height: auto; display: block; margin: 0 auto;' alt='Analyzed safety equipment image'/>
+                                    </div>
+                                </div>
+                                ${detectionsHTML}
+                                ${infoHTML}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    const errorMsg = result.error ? `: ${result.error}` : '';
+                    outputDiv.innerHTML = `<div class="error">⚠️ No detection results returned${errorMsg}. Please try another image.</div>`;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                outputDiv.innerHTML = `<div class="error">❌ Error processing image: ${error.message}</div>`;
+            } finally {
+                // Re-enable button
+                predictBtn.disabled = false;
+                predictBtn.textContent = '🔍 Detect Safety Equipment';
+            }
+        });
+    </script>
+</body>
+</html>
